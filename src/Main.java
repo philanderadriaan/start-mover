@@ -1,6 +1,12 @@
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Properties;
+
+import org.apache.commons.io.FileUtils;
 
 public class Main
 {
@@ -13,8 +19,26 @@ public class Main
 
     for (File srcFile : srcDir.listFiles())
     {
-      LogUtil.out(srcFile.getName());
+      String destFilePath = destDir.getAbsolutePath() + "\\" + srcFile.getName();
+      try
+      {
+        LogUtil.out("Move " + srcFile.getAbsolutePath() + " to " + destFilePath);
+        Files.move(srcFile.toPath(), Paths.get(destFilePath),
+                   StandardCopyOption.REPLACE_EXISTING);
+      }
+      catch (DirectoryNotEmptyException e)
+      {
+        LogUtil.out("Delete " + destFilePath);
+        FileUtils.deleteDirectory(new File(destFilePath));
+        LogUtil.out("Move " + srcFile.getAbsolutePath() + " to " + destFilePath);
+        Files.move(srcFile.toPath(), Paths.get(destFilePath),
+                   StandardCopyOption.REPLACE_EXISTING);
+      }
+      catch (Exception e)
+      {
+        e.printStackTrace();
+      }
     }
-
+    WavUtil.flush();
   }
 }
