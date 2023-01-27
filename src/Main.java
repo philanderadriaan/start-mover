@@ -1,5 +1,7 @@
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -8,8 +10,11 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.io.FileUtils;
@@ -18,7 +23,10 @@ import mslinks.ShellLink;
 
 public class Main
 {
-  public static void main(String[] args) throws Exception
+  public static void main(String[] args)
+      throws FileNotFoundException, IOException, ClassNotFoundException,
+      InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException,
+      InterruptedException, LineUnavailableException, UnsupportedAudioFileException
   {
     Properties prop = new Properties();
     prop.load(new FileInputStream("prop.properties"));
@@ -75,7 +83,6 @@ public class Main
         msg += delFile.getName() + "\n";
       }
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
       if (JOptionPane.showConfirmDialog(null, msg, "Delete?",
                                         JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
       {
