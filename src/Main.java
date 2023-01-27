@@ -59,7 +59,7 @@ public class Main
 
     for (File destSubDir : destDir.listFiles())
     {
-      if (destSubDir.isDirectory() && !destSubDir.getName().equalsIgnoreCase("startup"))
+      if (destSubDir.isDirectory() && !destSubDir.getName().equalsIgnoreCase("Startup"))
       {
         for (File copyFile : FileUtils.listFiles(destSubDir, TrueFileFilter.INSTANCE,
                                                  TrueFileFilter.INSTANCE))
