@@ -18,6 +18,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import mslinks.ShellLink;
 
@@ -32,9 +33,10 @@ public class Main
     prop.load(new FileInputStream("prop.properties"));
     File srcDir = new File(prop.getProperty("src"));
     File destDir = new File(prop.getProperty("dest"));
+
     for (File srcFile : srcDir.listFiles())
     {
-      String destFilePath = destDir.getAbsolutePath() + "\\" + srcFile.getName();
+      String destFilePath = destDir.getAbsolutePath() + '/' + srcFile.getName();
       try
       {
         LogUtil.out("Move " + srcFile.getAbsolutePath() + " to " + destFilePath);
@@ -54,6 +56,24 @@ public class Main
         e.printStackTrace();
       }
     }
+
+    for (File destSubDir : destDir.listFiles())
+    {
+      if (destSubDir.isDirectory() && !destSubDir.getName().equalsIgnoreCase("startup"))
+      {
+        for (File copyFile : FileUtils.listFiles(destSubDir, TrueFileFilter.INSTANCE,
+                                                 TrueFileFilter.INSTANCE))
+        {
+          LogUtil
+              .out("Copy " + copyFile.getAbsolutePath() + " to " + destDir.getAbsolutePath());
+          FileUtils.copyFile(copyFile,
+                             new File(destDir.getAbsolutePath() + '/' + copyFile.getName()));
+        }
+        LogUtil.out("Delete " + destSubDir.getName());
+        FileUtils.deleteDirectory(destSubDir);
+      }
+    }
+
     Set<File> delSet = new HashSet<File>();
     for (File destFile : destDir.listFiles())
     {
@@ -66,7 +86,6 @@ public class Main
           if (!targetFile.exists() && !targetFile.getAbsolutePath().contains("%windir%"))
           {
             delSet.add(destFile);
-            // LogUtil.out("Delete " + destFile.getName());
           }
         }
         catch (Exception e)
@@ -75,12 +94,13 @@ public class Main
         }
       }
     }
+
     if (!delSet.isEmpty())
     {
       String msg = "";
       for (File delFile : delSet)
       {
-        msg += delFile.getName() + "\n";
+        msg += delFile.getName() + '\n';
       }
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
       if (JOptionPane.showConfirmDialog(null, msg, "Delete?",
@@ -89,7 +109,7 @@ public class Main
         for (File delFile : delSet)
         {
           LogUtil.out("Delete " + delFile.getAbsolutePath());
-          FileUtils.delete(delFile);
+          Files.delete(delFile.toPath());
         }
       }
     }
