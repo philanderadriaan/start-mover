@@ -4,9 +4,17 @@ import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
+import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+
+import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.io.FileUtils;
+
+import mslinks.ShellLink;
 
 public class Main
 {
@@ -16,7 +24,6 @@ public class Main
     prop.load(new FileInputStream("prop.properties"));
     File srcDir = new File(prop.getProperty("src"));
     File destDir = new File(prop.getProperty("dest"));
-
     for (File srcFile : srcDir.listFiles())
     {
       String destFilePath = destDir.getAbsolutePath() + "\\" + srcFile.getName();
@@ -37,6 +44,46 @@ public class Main
       catch (Exception e)
       {
         e.printStackTrace();
+      }
+    }
+    Set<File> delSet = new HashSet<File>();
+    for (File destFile : destDir.listFiles())
+    {
+      if (destFile.isFile() &&
+          FileNameUtils.getExtension(destFile.getName()).equalsIgnoreCase("lnk"))
+      {
+        try
+        {
+          File targetFile = new File(new ShellLink(destFile).resolveTarget());
+          if (!targetFile.exists() && !targetFile.getAbsolutePath().contains("%windir%"))
+          {
+            delSet.add(destFile);
+            // LogUtil.out("Delete " + destFile.getName());
+          }
+        }
+        catch (Exception e)
+        {
+          // e.printStackTrace();
+        }
+      }
+    }
+    if (!delSet.isEmpty())
+    {
+      String msg = "";
+      for (File delFile : delSet)
+      {
+        msg += delFile.getName() + "\n";
+      }
+      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
+      if (JOptionPane.showConfirmDialog(null, msg, "Delete?",
+                                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+      {
+        for (File delFile : delSet)
+        {
+          LogUtil.out("Delete " + delFile.getAbsolutePath());
+          FileUtils.delete(delFile);
+        }
       }
     }
     WavUtil.flush();
